@@ -10,6 +10,6 @@ datasource db {
 model EpcisEvent {
   id        String   @id @default(cuid())
   epc       String
-  payload   Json
+  payload   String
   createdAt DateTime @default(now())
 }

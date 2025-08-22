@@ -41,8 +41,8 @@ export async function registerRoutes(app: FastifyInstance, prisma: PrismaClient)
 				identifierGtin: body.identifier.gtin || null,
 				identifierSku: body.identifier.sku || null,
 				digitalLinkUri: body.identifier.digitalLinkUri,
-				data: body,
-				visibility: body.visibility
+				data: JSON.stringify(body),
+				visibility: JSON.stringify(body.visibility || {})
 			}
 		});
 		await prisma.version.create({
@@ -58,9 +58,9 @@ export async function registerRoutes(app: FastifyInstance, prisma: PrismaClient)
 		if (!val.valid) return reply.code(400).send(val);
 		const existing = await prisma.dppItem.findUnique({ where: { id } });
 		if (!existing) return reply.notFound('DPP not found');
-		const updated = await prisma.dppItem.update({ where: { id }, data: { data: body, title: body.title, brand: body.brand, visibility: body.visibility, digitalLinkUri: body.identifier.digitalLinkUri, identifierGtin: body.identifier.gtin || null, identifierSku: body.identifier.sku || null } });
+		const updated = await prisma.dppItem.update({ where: { id }, data: { data: JSON.stringify(body), title: body.title, brand: body.brand, visibility: JSON.stringify(body.visibility || {}), digitalLinkUri: body.identifier.digitalLinkUri, identifierGtin: body.identifier.gtin || null, identifierSku: body.identifier.sku || null } });
 		const nextNum = (await prisma.version.count({ where: { dppItemId: id } })) + 1;
-		await prisma.version.create({ data: { number: nextNum, diff: body, createdBy: 'manual', dppItemId: id } });
+		await prisma.version.create({ data: { number: nextNum, diff: JSON.stringify(body), createdBy: 'manual', dppItemId: id } });
 		return reply.send({ id: updated.id, version: nextNum });
 	});
 
@@ -75,7 +75,8 @@ export async function registerRoutes(app: FastifyInstance, prisma: PrismaClient)
 		const id = (req.params as any).id;
 		const item = await prisma.dppItem.findUnique({ where: { id } });
 		if (!item) return reply.notFound('DPP not found');
-		const publicJson = computePublicView(item.data);
+		const full = typeof (item as any).data === 'string' ? JSON.parse((item as any).data as any) : (item as any).data;
+		const publicJson = computePublicView(full);
 		const tag = computeETag(publicJson);
 		reply.header('ETag', tag);
 		return reply.send(publicJson);

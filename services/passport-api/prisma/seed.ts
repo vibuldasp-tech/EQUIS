@@ -32,8 +32,9 @@ async function main() {
 			compliance: { certifications: [it.cert] },
 			visibility: visibility()
 		};
-		const created = await prisma.dppItem.create({ data: { title: payload.title, brand: payload.brand, unit: payload.unit, identifierGtin: payload.identifier.gtin!, identifierSku: payload.identifier.sku!, digitalLinkUri: payload.identifier.digitalLinkUri, data: payload, visibility: payload.visibility } });
-		await prisma.version.create({ data: { number: 1, diff: payload, createdBy: 'seed', dppItemId: created.id } });
+		const created = await prisma.dppItem.create({ data: { title: payload.title, brand: payload.brand, unit: payload.unit, identifierGtin: payload.identifier.gtin!, identifierSku: payload.identifier.sku!, digitalLinkUri: payload.identifier.digitalLinkUri, data: JSON.stringify(payload), visibility: JSON.stringify(payload.visibility) } });
+		await prisma.version.create({ data: { number: 1, diff: JSON.stringify(payload), createdBy: 'seed', dppItemId: created.id } });
+		console.log('seeded', created.id, '-', payload.title);
 	}
 	console.log('Seeded DPP items:', items.length);
 }
