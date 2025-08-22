@@ -1,0 +1,13 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "Passport API", "version": "0.1.0" },
+  "paths": {
+    "/v1/dpp": { "post": { "summary": "Create DPP", "responses": { "201": { "description": "Created" } } } },
+    "/v1/dpp/{id}": { "get": { "summary": "Operator view", "responses": { "200": { "description": "OK" } } }, "put": { "summary": "Update DPP", "responses": { "200": { "description": "OK" } } } },
+    "/v1/dpp/{id}/public": { "get": { "summary": "Public JSON", "responses": { "200": { "description": "OK" } } } },
+    "/v1/dpp/{id}/evidence": { "post": { "summary": "Evidence upload workflow", "responses": { "200": { "description": "OK" } } } },
+    "/v1/dpp/{id}/versions": { "get": { "summary": "List versions", "responses": { "200": { "description": "OK" } } } },
+    "/v1/dpp/{id}/versions/{n}": { "get": { "summary": "Get version", "responses": { "200": { "description": "OK" } } } },
+    "/v1/validate": { "post": { "summary": "Validate payload", "responses": { "200": { "description": "OK" } } } }
+  }
+}

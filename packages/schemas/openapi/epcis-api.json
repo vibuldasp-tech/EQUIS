@@ -1,0 +1,8 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "EPCIS Mock API", "version": "0.1.0" },
+  "paths": {
+    "/v2/capture": { "post": { "summary": "Capture events", "responses": { "202": { "description": "Accepted" } } } },
+    "/v2/events": { "get": { "summary": "Query events by EPC", "responses": { "200": { "description": "OK" } } } }
+  }
+}
