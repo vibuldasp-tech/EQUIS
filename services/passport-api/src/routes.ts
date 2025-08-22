@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { PrismaClient } from '@prisma/client';
 import crypto from 'crypto';
-import { profiles, validateDpp } from '@dpp/schemas';
+import { validateDpp } from './validate';
 import { getEvidenceSignedUrl } from './s3';
 
 function computePublicView(payload: any) {
