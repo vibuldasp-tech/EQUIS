@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model DppItem {
+  id             String    @id @default(cuid())
+  title          String
+  brand          String
+  unit           String
+  identifierGtin String?   @db.VarChar(14)
+  identifierSku  String?
+  digitalLinkUri String
+  data           Json
+  visibility     Json
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  versions       Version[]
+}
+
+model Version {
+  id        String   @id @default(cuid())
+  number    Int
+  diff      Json
+  createdBy String
+  createdAt DateTime @default(now())
+  dppItem   DppItem  @relation(fields: [dppItemId], references: [id])
+  dppItemId String
+}
+
+model Evidence {
+  id        String   @id @default(cuid())
+  dppItem   DppItem  @relation(fields: [dppItemId], references: [id])
+  dppItemId String
+  key       String
+  url       String
+  sha256    String
+  createdAt DateTime @default(now())
+}

@@ -27,9 +27,17 @@ export function createValidator() {
 	return ajv;
 }
 
-export function validateDpp(payload: unknown): ValidationResult {
+export function validateDpp(payload: any): ValidationResult {
 	const ajv = createValidator();
 	const validate = ajv.compile(profiles['textiles-minimal-2027']);
 	const valid = validate(payload);
-	return { valid: Boolean(valid), errors: validate.errors || undefined };
+	const errors: ErrorObject[] = [];
+	if (!valid && validate.errors) errors.push(...validate.errors);
+	if (payload && Array.isArray((payload as any).composition)) {
+		const sum = (payload as any).composition.reduce((acc: number, c: any) => acc + (Number(c.percentage) || 0), 0);
+		if (Math.abs(sum - 100) > 0.5) {
+			errors.push({ keyword: 'compositionTotal', instancePath: '/composition', schemaPath: '#/properties/composition', params: { sum }, message: 'sum(percentage) must equal 100 ± 0.5' } as any);
+		}
+	}
+	return { valid: errors.length === 0, errors: errors.length ? errors : undefined };
 }
