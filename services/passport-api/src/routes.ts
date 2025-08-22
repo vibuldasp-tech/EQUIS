@@ -22,10 +22,29 @@ function computeETag(obj: any) {
 }
 
 export async function registerRoutes(app: FastifyInstance, prisma: PrismaClient) {
+	// Demo login: exchange apiKey for JWT
+	app.post('/v1/auth/login', async (req, reply) => {
+		const { apiKey } = (req.body as any) || {};
+		const expected = process.env.OPERATOR_API_KEY || 'dev-operator-key';
+		if (!apiKey || apiKey !== expected) return reply.code(401).send({ message: 'invalid credentials' });
+		const token = (app as any).jwt.sign({ sub: 'operator', role: 'operator' }, { expiresIn: '2h' });
+		return { token };
+	});
+
 	app.post('/v1/validate', async (req, reply) => {
 		const body = req.body;
 		const res = validateDpp(body);
 		return reply.code(res.valid ? 200 : 400).send(res);
+	});
+
+	app.get('/v1/dpp', { preHandler: [app.authenticate?.bind(app) as any].filter(Boolean) }, async (req, reply) => {
+		const { q, limit = '20', offset = '0' } = (req.query as any) || {};
+		const where: any = q ? { OR: [{ title: { contains: q } }, { brand: { contains: q } }, { identifierGtin: { contains: q } }, { identifierSku: { contains: q } }] } : {};
+		const [items, total] = await Promise.all([
+			prisma.dppItem.findMany({ where, orderBy: { createdAt: 'desc' }, take: Number(limit), skip: Number(offset) }),
+			prisma.dppItem.count({ where })
+		]);
+		return reply.send({ total, items });
 	});
 
 	app.post('/v1/dpp', { preHandler: [app.authenticate?.bind(app) as any].filter(Boolean) }, async (req, reply) => {
@@ -46,7 +65,7 @@ export async function registerRoutes(app: FastifyInstance, prisma: PrismaClient)
 			}
 		});
 		await prisma.version.create({
-			data: { number: 1, diff: body, createdBy: 'manual', dppItemId: item.id }
+			data: { number: 1, diff: JSON.stringify(body), createdBy: 'manual', dppItemId: item.id }
 		});
 		return reply.code(201).send({ id: item.id });
 	});
