@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.dpp.local/textiles-minimal-2027.json",
+  "title": "Textiles Minimal 2027 DPP",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["title", "brand", "identifier", "composition", "circularity", "visibility"],
+  "properties": {
+    "title": { "type": "string", "minLength": 1 },
+    "brand": { "type": "string", "minLength": 1 },
+    "identifier": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "gtin": { "type": "string", "pattern": "^\\d{8,14}$" },
+        "sku": { "type": "string", "minLength": 1 },
+        "digitalLinkUri": { "type": "string", "format": "uri", "pattern": "^https?://" },
+        "internalId": { "type": "string", "minLength": 1 }
+      },
+      "allOf": [
+        {
+          "anyOf": [
+            { "required": ["gtin"] },
+            { "required": ["sku"] },
+            { "required": ["internalId"] }
+          ]
+        }
+      ]
+    },
+    "production": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "date": { "type": "string", "format": "date" },
+        "countryOfOrigin": { "type": "string", "pattern": "^[A-Z]{2}$" },
+        "tierSuppliers": {
+          "type": "array",
+          "items": { "type": "string" },
+          "maxItems": 50
+        }
+      }
+    },
+    "composition": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["material", "percentage"],
+        "properties": {
+          "material": { "type": "string", "minLength": 1 },
+          "percentage": { "type": "number", "minimum": 0, "maximum": 100 },
+          "recycled": { "type": "boolean" },
+          "recycledContentPct": { "type": "number", "minimum": 0, "maximum": 100 }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "recycled": { "const": true } } },
+            "then": { "required": ["recycledContentPct"] }
+          },
+          {
+            "$comment": "recycledContentPct must be <= percentage",
+            "if": { "properties": { "recycledContentPct": { "type": "number" } }, "required": ["recycledContentPct", "percentage"] },
+            "then": {
+              "properties": {
+                "recycledContentPct": { "type": "number", "maximum": { "$data": "1/percentage" } }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "circularity": {
+      "type": "object",
+      "required": ["careInstructions"],
+      "additionalProperties": false,
+      "properties": {
+        "careInstructions": { "type": "string", "minLength": 1 },
+        "repairability": { "type": "string" },
+        "endOfLife": { "type": "string" },
+        "recyclability": { "type": "string" }
+      }
+    },
+    "compliance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "certifications": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["scheme", "id", "validUntil"],
+            "properties": {
+              "scheme": { "type": "string" },
+              "id": { "type": "string" },
+              "validUntil": { "type": "string", "format": "date" },
+              "evidenceUrl": { "type": "string", "format": "uri", "pattern": "^https?://" }
+            }
+          }
+        },
+        "declarations": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "operators": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "manufacturer": { "type": "string" },
+        "importer": { "type": "string" },
+        "reo": { "type": "string" }
+      }
+    },
+    "facilities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ufi", "type", "country"],
+        "additionalProperties": false,
+        "properties": {
+          "ufi": { "type": "string" },
+          "type": { "type": "string" },
+          "country": { "type": "string", "pattern": "^[A-Z]{2}$" }
+        }
+      }
+    },
+    "events": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "epcisUrl": { "type": "string", "format": "uri", "pattern": "^https?://" }
+      }
+    },
+    "visibility": {
+      "type": "object",
+      "required": ["publicFields", "restrictedFields"],
+      "additionalProperties": false,
+      "properties": {
+        "publicFields": { "type": "array", "items": { "type": "string" } },
+        "restrictedFields": { "type": "array", "items": { "type": "string" } }
+      },
+      "allOf": [
+        {
+          "$comment": "No overlap between public and restricted fields",
+          "not": {
+            "properties": {
+              "publicFields": {
+                "contains": { "enum": { "$data": "1/restrictedFields" } }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "unit": { "type": "string", "enum": ["variant", "lot", "serial"] }
+  },
+  "$defs": {
+    "compositionTotal": {
+      "$comment": "composition sum must be 100 ± 0.5",
+      "type": "object"
+    }
+  }
+}

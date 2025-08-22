@@ -1,0 +1,9 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "ID Resolver API", "version": "0.1.0" },
+  "paths": {
+    "/v1/ids": { "post": { "summary": "Mint Digital Link URIs", "responses": { "200": { "description": "OK" } } } },
+    "/.well-known/digital-link/{path}": { "get": { "summary": "Resolve Digital Link", "responses": { "302": { "description": "Found" } } } },
+    "/v1/qr/{id}": { "get": { "summary": "Generate QR", "responses": { "200": { "description": "OK" } } } }
+  }
+}

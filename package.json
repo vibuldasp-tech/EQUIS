@@ -1,0 +1,29 @@
+{
+  "name": "dpp-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "services/*",
+    "services/connectors/*",
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "echo 'Build handled per workspace'",
+    "dev": "make dev",
+    "test": "make test",
+    "lint": "eslint . --ext .ts,.tsx --max-warnings=0",
+    "typecheck": "tsc -b",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.10",
+    "eslint": "^9.9.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-jsonc": "^2.16.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "prettier": "^3.3.3",
+    "typescript": "^5.5.4"
+  }
+}
